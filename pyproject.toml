@@ -1,0 +1,50 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "summon"
+version = "0.1.0"
+description = "Stop trying to make fetch happen."
+readme = "README.md"
+license = "BSD-2-Clause"
+requires-python = ">=3.10"
+authors = [
+    { name = "Bailey \"monokrome\" Stoner" },
+]
+
+dependencies = [
+    "zope.interface>=6.0",
+]
+
+[project.optional-dependencies]
+django = [
+    "django>=4.2",
+    "acq>=0.1.0",
+]
+dev = [
+    "pytest",
+    "pytest-django",
+    "mypy",
+    "mypy-zope",
+    "django-stubs",
+    "django>=4.2",
+    "djangorestframework>=3.14",
+    "acq>=0.1.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/summon"]
+
+[tool.mypy]
+plugins = ["mypy_django_plugin.main", "mypy_zope:plugin"]
+mypy_path = ["src", "."]
+
+[tool.django-stubs]
+django_settings_module = "tests.settings"
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "tests.settings"
+pythonpath = ["src", "."]
+testpaths = ["tests"]
+addopts = "--ignore=tests/test_types.py"
