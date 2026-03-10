@@ -2,10 +2,10 @@ import pytest
 
 from zope.interface import Interface
 
-import summon
-from summon import register, Collection, SummonInterface
-from summon.registry import clear
-from summon.django import IModel
+import beckon
+from beckon import register, Collection, BeckonInterface
+from beckon.registry import clear
+from beckon.django import IModel
 
 from .models import FakeArticle
 from .serializers import FakeArticleSerializer
@@ -14,7 +14,7 @@ from .serializers import FakeArticleSerializer
 class _ISerializer(Interface):
     pass
 
-ISerializer: SummonInterface[type] = SummonInterface(_ISerializer, infer_from='model')
+ISerializer: BeckonInterface[type] = BeckonInterface(_ISerializer, infer_from='model')
 
 
 @pytest.fixture(autouse=True)
@@ -28,67 +28,67 @@ class TestCallableModule:
     def test_module_is_callable(self):
         register(IModel, FakeArticle)
 
-        result = summon(IModel, 'tests.fakearticle')
+        result = beckon(IModel, 'tests.fakearticle')
         assert result is FakeArticle
 
     def test_module_exposes_register(self):
-        assert summon.register is register
+        assert beckon.register is register
 
-    def test_module_exposes_summon(self):
-        from summon import summon as summon_fn
-        assert summon.summon is summon_fn
+    def test_module_exposes_beckon(self):
+        from beckon import beckon as beckon_fn
+        assert beckon.beckon is beckon_fn
 
     def test_module_exposes_clear(self):
-        from summon.registry import clear as clear_fn
-        assert summon.clear is clear_fn
+        from beckon.registry import clear as clear_fn
+        assert beckon.clear is clear_fn
 
     def test_module_exposes_add_name_resolver(self):
-        from summon.registry import add_name_resolver as anr
-        assert summon.add_name_resolver is anr
+        from beckon.registry import add_name_resolver as anr
+        assert beckon.add_name_resolver is anr
 
-    def test_module_exposes_summon_interface(self):
-        assert summon.SummonInterface is SummonInterface
+    def test_module_exposes_beckon_interface(self):
+        assert beckon.BeckonInterface is BeckonInterface
 
     def test_module_exposes_collection(self):
-        assert summon.Collection is Collection
+        assert beckon.Collection is Collection
 
 
 class TestRegisterModel:
     def test_registers_model(self):
         register(IModel, FakeArticle)
 
-        results = summon(IModel)
+        results = beckon(IModel)
         assert len(results) == 1
 
     def test_model_name_inferred_from_meta(self):
         register(IModel, FakeArticle)
 
-        result = summon(IModel, 'tests.fakearticle')
+        result = beckon(IModel, 'tests.fakearticle')
         assert result is FakeArticle
 
     def test_returns_none_for_unknown_name(self):
-        assert summon(IModel, 'nonexistent') is None
+        assert beckon(IModel, 'nonexistent') is None
 
 
 class TestRegisterSerializer:
     def test_registers_serializer(self):
         register(ISerializer, FakeArticleSerializer)
 
-        results = summon(ISerializer)
+        results = beckon(ISerializer)
         assert len(results) == 1
 
     def test_serializer_name_inferred_from_meta_model(self):
         register(ISerializer, FakeArticleSerializer)
 
-        result = summon(ISerializer, 'tests.fakearticle')
+        result = beckon(ISerializer, 'tests.fakearticle')
         assert result is FakeArticleSerializer
 
     def test_serializer_linked_to_model_via_relationship(self):
         register(IModel, FakeArticle)
         register(ISerializer, FakeArticleSerializer)
 
-        model = summon(IModel, 'tests.fakearticle')
-        serializer = summon(ISerializer, 'tests.fakearticle')
+        model = beckon(IModel, 'tests.fakearticle')
+        serializer = beckon(ISerializer, 'tests.fakearticle')
 
         assert model is FakeArticle
         assert serializer is FakeArticleSerializer
@@ -99,15 +99,15 @@ class TestReverseRelationship:
         register(IModel, FakeArticle)
         register(ISerializer, FakeArticleSerializer)
 
-        assert summon(ISerializer, 'tests.fakearticle') is FakeArticleSerializer
-        assert summon(IModel, 'tests.fakearticle') is FakeArticle
+        assert beckon(ISerializer, 'tests.fakearticle') is FakeArticleSerializer
+        assert beckon(IModel, 'tests.fakearticle') is FakeArticle
 
     def test_explicit_reverse_relationship(self):
         register(IModel, FakeArticle)
         register(ISerializer, FakeArticleSerializer, model=FakeArticle)
 
-        assert summon(ISerializer, 'tests.fakearticle') is FakeArticleSerializer
-        assert summon(IModel, 'tests.fakearticle') is FakeArticle
+        assert beckon(ISerializer, 'tests.fakearticle') is FakeArticleSerializer
+        assert beckon(IModel, 'tests.fakearticle') is FakeArticle
 
 
 class TestCustomInferFrom:
@@ -115,7 +115,7 @@ class TestCustomInferFrom:
         class _IValidator(Interface):
             pass
 
-        IValidator = SummonInterface(_IValidator, infer_from='model')
+        IValidator = BeckonInterface(_IValidator, infer_from='model')
 
         class FakeValidator:
             class Meta:
@@ -124,13 +124,13 @@ class TestCustomInferFrom:
         register(IModel, FakeArticle)
         register(IValidator, FakeValidator)
 
-        assert summon(IValidator, 'tests.fakearticle') is FakeValidator
+        assert beckon(IValidator, 'tests.fakearticle') is FakeValidator
 
     def test_no_infer_from_skips_inference(self):
         class _IPermission(Interface):
             pass
 
-        IPermission = SummonInterface(_IPermission)
+        IPermission = BeckonInterface(_IPermission)
 
         class IsAdmin:
             name = 'is_admin'
@@ -140,8 +140,8 @@ class TestCustomInferFrom:
         register(IModel, FakeArticle)
         register(IPermission, IsAdmin)
 
-        assert summon(IPermission, 'is_admin') is IsAdmin
-        assert summon(IPermission, 'tests.fakearticle') is None
+        assert beckon(IPermission, 'is_admin') is IsAdmin
+        assert beckon(IPermission, 'tests.fakearticle') is None
 
 
 class TestRegisterCollection:
@@ -149,7 +149,7 @@ class TestRegisterCollection:
         class _ICollection(Interface):
             pass
 
-        ICollection = SummonInterface(_ICollection)
+        ICollection = BeckonInterface(_ICollection)
 
         class Latest(Collection):
             name = 'latest'
@@ -159,14 +159,14 @@ class TestRegisterCollection:
 
         register(ICollection, Latest)
 
-        results = summon(ICollection)
+        results = beckon(ICollection)
         assert len(results) == 1
 
     def test_collection_name_from_attribute(self):
         class _ICollection(Interface):
             pass
 
-        ICollection = SummonInterface(_ICollection)
+        ICollection = BeckonInterface(_ICollection)
 
         class Latest(Collection):
             name = 'latest'
@@ -175,28 +175,28 @@ class TestRegisterCollection:
                 return []
 
         register(ICollection, Latest)
-        assert summon(ICollection, 'latest') is Latest
+        assert beckon(ICollection, 'latest') is Latest
 
     def test_collection_name_falls_back_to_class_name(self):
         class _ICollection(Interface):
             pass
 
-        ICollection = SummonInterface(_ICollection)
+        ICollection = BeckonInterface(_ICollection)
 
         class Trending(Collection):
             def items(self, request):
                 return []
 
         register(ICollection, Trending)
-        assert summon(ICollection, 'Trending') is Trending
+        assert beckon(ICollection, 'Trending') is Trending
 
 
 class TestExplicitName:
     def test_explicit_name_overrides_inference(self):
         register(IModel, FakeArticle, name='custom_name')
 
-        assert summon(IModel, 'custom_name') is FakeArticle
-        assert summon(IModel, 'tests.fakearticle') is None
+        assert beckon(IModel, 'custom_name') is FakeArticle
+        assert beckon(IModel, 'tests.fakearticle') is None
 
 
 class TestExplicitRelationships:
@@ -204,7 +204,7 @@ class TestExplicitRelationships:
         register(IModel, FakeArticle)
         register(ISerializer, FakeArticleSerializer, model=FakeArticle)
 
-        assert summon(ISerializer, 'tests.fakearticle') is FakeArticleSerializer
+        assert beckon(ISerializer, 'tests.fakearticle') is FakeArticleSerializer
 
 
 class TestFetchAll:
@@ -212,7 +212,7 @@ class TestFetchAll:
         class _ICollection(Interface):
             pass
 
-        ICollection = SummonInterface(_ICollection)
+        ICollection = BeckonInterface(_ICollection)
 
         register(IModel, FakeArticle)
 
@@ -224,15 +224,15 @@ class TestFetchAll:
 
         register(ICollection, Latest)
 
-        assert len(summon(IModel)) == 1
-        assert len(summon(ICollection)) == 1
+        assert len(beckon(IModel)) == 1
+        assert len(beckon(ICollection)) == 1
 
     def test_different_interfaces_are_independent(self):
         register(IModel, FakeArticle)
         register(ISerializer, FakeArticleSerializer)
 
-        assert len(summon(IModel)) == 1
-        assert len(summon(ISerializer)) == 1
+        assert len(beckon(IModel)) == 1
+        assert len(beckon(ISerializer)) == 1
 
 
 class TestCustomInterface:
@@ -240,13 +240,13 @@ class TestCustomInterface:
         class _IPermission(Interface):
             pass
 
-        IPermission = SummonInterface(_IPermission)
+        IPermission = BeckonInterface(_IPermission)
 
         class IsAdmin:
             name = 'is_admin'
 
         register(IPermission, IsAdmin)
-        assert summon(IPermission, 'is_admin') is IsAdmin
+        assert beckon(IPermission, 'is_admin') is IsAdmin
 
     def test_custom_interfaces_are_independent(self):
         class _IPermission(Interface):
@@ -255,8 +255,8 @@ class TestCustomInterface:
         class _IValidator(Interface):
             pass
 
-        IPermission = SummonInterface(_IPermission)
-        IValidator = SummonInterface(_IValidator)
+        IPermission = BeckonInterface(_IPermission)
+        IValidator = BeckonInterface(_IValidator)
 
         class IsAdmin:
             name = 'is_admin'
@@ -267,7 +267,7 @@ class TestCustomInterface:
         register(IPermission, IsAdmin)
         register(IValidator, EmailValidator)
 
-        assert len(summon(IPermission)) == 1
-        assert len(summon(IValidator)) == 1
-        assert summon(IPermission, 'is_admin') is IsAdmin
-        assert summon(IValidator, 'email') is EmailValidator
+        assert len(beckon(IPermission)) == 1
+        assert len(beckon(IValidator)) == 1
+        assert beckon(IPermission, 'is_admin') is IsAdmin
+        assert beckon(IValidator, 'email') is EmailValidator

@@ -1,4 +1,4 @@
-# summon
+# beckon
 
 Stop trying to make fetch happen.
 
@@ -9,48 +9,48 @@ imports. Relationships are inferred and bidirectional.
 ## Install
 
 ```
-pip install summon
+pip install beckon
 ```
 
 For Django integration:
 
 ```
-pip install summon[django]
+pip install beckon[django]
 ```
 
 ## Quick Start
 
 ```python
 from zope.interface import Interface
-from summon import register, SummonInterface
+from beckon import register, BeckonInterface
 
 class _IService(Interface):
     pass
 
-IService = SummonInterface(_IService)
+IService = BeckonInterface(_IService)
 ```
 
 ```python
 # register
 register(IService, MyService, name='email')
 
-# summon
-import summon
+# beckon
+import beckon
 
-summon(IService, 'email')  # -> MyService
-summon(IService)           # -> [('email', MyService)]
+beckon(IService, 'email')  # -> MyService
+beckon(IService)           # -> [('email', MyService)]
 ```
 
-The module itself is callable — `import summon; summon(...)` works
+The module itself is callable — `import beckon; beckon(...)` works
 without importing the function separately.
 
 ## Django Integration
 
-Add `summon.django` to `INSTALLED_APPS`:
+Add `beckon.django` to `INSTALLED_APPS`:
 
 ```python
 INSTALLED_APPS = [
-    'summon.django',
+    'beckon.django',
     # ...
 ]
 ```
@@ -59,8 +59,8 @@ This registers a name resolver for Django models (`_meta.label_lower`)
 and provides `IModel`:
 
 ```python
-from summon import register
-from summon.django import IModel
+from beckon import register
+from beckon.django import IModel
 
 from .models import Post
 
@@ -68,22 +68,22 @@ register(IModel, Post)
 ```
 
 ```python
-import summon
-from summon.django import IModel
+import beckon
+from beckon.django import IModel
 
-Post = summon(IModel, 'posts.post')
+Post = beckon(IModel, 'posts.post')
 ```
 
 ## Custom Interfaces with Relationships
 
 ```python
 from zope.interface import Interface
-from summon import SummonInterface, register
+from beckon import BeckonInterface, register
 
 class _ISerializer(Interface):
     pass
 
-ISerializer = SummonInterface(_ISerializer, infer_from='model')
+ISerializer = BeckonInterface(_ISerializer, infer_from='model')
 ```
 
 Register a serializer and it automatically links to its model:
@@ -92,8 +92,8 @@ Register a serializer and it automatically links to its model:
 register(IModel, Post)
 register(ISerializer, PostSerializer)  # infers from Meta.model
 
-summon(ISerializer, 'posts.post')  # -> PostSerializer
-summon(IModel, 'posts.post')       # -> Post (reverse works too)
+beckon(ISerializer, 'posts.post')  # -> PostSerializer
+beckon(IModel, 'posts.post')       # -> Post (reverse works too)
 ```
 
 ## Type Safety
@@ -101,20 +101,20 @@ summon(IModel, 'posts.post')       # -> Post (reverse works too)
 Interfaces carry generic type information:
 
 ```python
-IModel: SummonInterface[type[Model]] = SummonInterface(_IModel)
+IModel: BeckonInterface[type[Model]] = BeckonInterface(_IModel)
 ```
 
 mypy infers return types automatically:
 
 ```python
-summon(IModel, 'auth.user')  # mypy sees: type[Model] | None
+beckon(IModel, 'auth.user')  # mypy sees: type[Model] | None
 ```
 
 Define your own typed interfaces and get the same inference:
 
 ```python
-IPermission: SummonInterface[type[BasePermission]] = SummonInterface(_IPermission)
-summon(IPermission, 'is_admin')  # mypy sees: type[BasePermission] | None
+IPermission: BeckonInterface[type[BasePermission]] = BeckonInterface(_IPermission)
+beckon(IPermission, 'is_admin')  # mypy sees: type[BasePermission] | None
 ```
 
 ## License

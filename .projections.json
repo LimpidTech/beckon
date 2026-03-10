@@ -1,10 +1,10 @@
 {
-  "src/summon/*.py": {
+  "src/beckon/*.py": {
     "alternate": "tests/test_{basename}.py",
     "type": "source"
   },
   "tests/test_*.py": {
-    "alternate": "src/summon/{basename}.py",
+    "alternate": "src/beckon/{basename}.py",
     "type": "test"
   }
 }

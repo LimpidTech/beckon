@@ -4,7 +4,7 @@ from typing import Any, TYPE_CHECKING
 
 from zope.interface import Interface
 
-from summon import SummonInterface, add_name_resolver
+from beckon import BeckonInterface, add_name_resolver
 
 if TYPE_CHECKING:
     from django.db.models import Model
@@ -61,4 +61,4 @@ class _IModel(Interface):
     """A Django model."""
 
 
-IModel: SummonInterface[type[Model]] = SummonInterface(_IModel)
+IModel: BeckonInterface[type[Model]] = BeckonInterface(_IModel)

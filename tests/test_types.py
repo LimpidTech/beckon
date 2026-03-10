@@ -5,17 +5,17 @@ from rest_framework.serializers import Serializer
 
 from zope.interface import Interface
 
-from summon import SummonInterface, summon
-from summon.django import IModel
+from beckon import BeckonInterface, beckon
+from beckon.django import IModel
 
 
 # Built-in interface
-def test_summon_model() -> None:
-    result = summon(IModel, 'auth.user')
+def test_beckon_model() -> None:
+    result = beckon(IModel, 'auth.user')
     reveal_type(result)
 
-def test_summon_all_models() -> None:
-    result = summon(IModel)
+def test_beckon_all_models() -> None:
+    result = beckon(IModel)
     reveal_type(result)
 
 
@@ -23,14 +23,14 @@ def test_summon_all_models() -> None:
 class _ISerializer(Interface):
     pass
 
-ISerializer: SummonInterface[type[Serializer]] = SummonInterface(_ISerializer, infer_from='model')
+ISerializer: BeckonInterface[type[Serializer]] = BeckonInterface(_ISerializer, infer_from='model')
 
-def test_summon_serializer_via_relation() -> None:
-    result = summon(ISerializer, 'posts.post')
+def test_beckon_serializer_via_relation() -> None:
+    result = beckon(ISerializer, 'posts.post')
     reveal_type(result)
 
-def test_summon_model_via_reverse_relation() -> None:
-    result = summon(IModel, 'posts.post')
+def test_beckon_model_via_reverse_relation() -> None:
+    result = beckon(IModel, 'posts.post')
     reveal_type(result)
 
 
@@ -41,12 +41,12 @@ class BasePermission:
 class _IPermission(Interface):
     pass
 
-IPermission: SummonInterface[type[BasePermission]] = SummonInterface(_IPermission)
+IPermission: BeckonInterface[type[BasePermission]] = BeckonInterface(_IPermission)
 
-def test_summon_custom() -> None:
-    result = summon(IPermission, 'is_admin')
+def test_beckon_custom() -> None:
+    result = beckon(IPermission, 'is_admin')
     reveal_type(result)
 
-def test_summon_all_custom() -> None:
-    result = summon(IPermission)
+def test_beckon_all_custom() -> None:
+    result = beckon(IPermission)
     reveal_type(result)

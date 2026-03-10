@@ -4,15 +4,15 @@ from typing import Any, Callable, TypeVar, overload
 
 from zope.interface.adapter import AdapterRegistry
 
-from .interfaces import SummonInterface
+from .interfaces import BeckonInterface
 
 
 T = TypeVar('T')
 
 _registry = AdapterRegistry()
 
-_component_index: dict[int, tuple[SummonInterface[Any], str]] = {}
-_known_interfaces: list[SummonInterface[Any]] = []
+_component_index: dict[int, tuple[BeckonInterface[Any], str]] = {}
+_known_interfaces: list[BeckonInterface[Any]] = []
 _name_resolvers: list[Callable[[Any], str | None]] = []
 
 
@@ -50,7 +50,7 @@ def _resolve_infer_from(component: Any, attr: str) -> Any | None:
     return getattr(component, attr, None)
 
 
-def _infer_adapts(interface: SummonInterface[Any], component: Any) -> list[tuple[SummonInterface[Any], str]]:
+def _infer_adapts(interface: BeckonInterface[Any], component: Any) -> list[tuple[BeckonInterface[Any], str]]:
     results = []
 
     if interface.infer_from is not None:
@@ -66,7 +66,7 @@ def _infer_adapts(interface: SummonInterface[Any], component: Any) -> list[tuple
     return results
 
 
-def _register_adapter(from_iface: SummonInterface[Any], to_iface: SummonInterface[Any], name: str, component: Any) -> None:
+def _register_adapter(from_iface: BeckonInterface[Any], to_iface: BeckonInterface[Any], name: str, component: Any) -> None:
     _registry.register(
         [from_iface.interface], to_iface.interface, name, component,
     )
@@ -92,18 +92,18 @@ def add_name_resolver(resolver: Callable[[Any], str | None]) -> None:
 
 
 @overload
-def summon(interface: SummonInterface[T], name: str) -> T | None: ...
+def beckon(interface: BeckonInterface[T], name: str) -> T | None: ...
 
 @overload
-def summon(interface: SummonInterface[T]) -> list[tuple[str, T]]: ...
+def beckon(interface: BeckonInterface[T]) -> list[tuple[str, T]]: ...
 
 
-def summon(interface: SummonInterface[T], name: str | None = None) -> T | list[tuple[str, T]] | None:
+def beckon(interface: BeckonInterface[T], name: str | None = None) -> T | list[tuple[str, T]] | None:
     """Look up registered components.
 
-        summon(IModel)                     # all
-        summon(IModel, 'posts.post')       # by name
-        summon(ISerializer, 'posts.post')  # via adapter
+        beckon(IModel)                     # all
+        beckon(IModel, 'posts.post')       # by name
+        beckon(ISerializer, 'posts.post')  # via adapter
 
     Adapter lookups work in both directions.
 
@@ -131,7 +131,7 @@ def summon(interface: SummonInterface[T], name: str | None = None) -> T | list[t
     return _registry.lookupAll([], zope_iface)
 
 
-def register(interface: SummonInterface[Any], component: Any, name: str | None = None, **adapts: Any) -> None:
+def register(interface: BeckonInterface[Any], component: Any, name: str | None = None, **adapts: Any) -> None:
     """Register a component under an interface.
 
         register(IModel, Post)

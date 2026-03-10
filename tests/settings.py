@@ -3,7 +3,7 @@ SECRET_KEY = 'test-secret-key'
 INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.auth',
-    'summon.django',
+    'beckon.django',
     'tests',
 ]
 
