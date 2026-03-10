@@ -20,9 +20,11 @@ pip install beckon[django]
 
 ## Quick Start
 
+Define an interface:
+
 ```python
 from zope.interface import Interface
-from beckon import register, BeckonInterface
+from beckon import BeckonInterface
 
 class _IService(Interface):
     pass
@@ -30,11 +32,15 @@ class _IService(Interface):
 IService = BeckonInterface(_IService)
 ```
 
-```python
-# register
-register(IService, MyService, name='email')
+Register components and look them up:
 
-# beckon
+```python
+from beckon import register
+
+register(IService, MyService, name='email')
+```
+
+```python
 import beckon
 
 beckon(IService, 'email')  # -> MyService
@@ -55,17 +61,15 @@ INSTALLED_APPS = [
 ]
 ```
 
-This registers a name resolver for Django models (`_meta.label_lower`)
-and provides `IModel`:
+This does three things:
 
-```python
-from beckon import register
-from beckon.django import IModel
+1. Registers every Django model with `IModel` automatically
+2. Registers a name resolver so models are named by
+   `_meta.label_lower` (e.g. `posts.post`)
+3. Auto-discovers `resources.py` in every installed app via
+   [acq](https://pypi.org/project/acq/)
 
-from .models import Post
-
-register(IModel, Post)
-```
+Every model is available immediately:
 
 ```python
 import beckon
@@ -74,11 +78,27 @@ from beckon.django import IModel
 Post = beckon(IModel, 'posts.post')
 ```
 
+For anything beyond models (serializers, permissions, custom
+interfaces), put `register()` calls in a `resources.py` file
+inside any installed app. beckon finds them automatically on
+startup:
+
+```python
+# posts/resources.py
+
+from beckon import register
+from myapp.interfaces import ISerializer
+
+from .serializers import PostSerializer
+
+register(ISerializer, PostSerializer)  # infers model from Meta.model
+```
+
 ## Custom Interfaces with Relationships
 
 ```python
 from zope.interface import Interface
-from beckon import BeckonInterface, register
+from beckon import BeckonInterface
 
 class _ISerializer(Interface):
     pass
@@ -86,11 +106,27 @@ class _ISerializer(Interface):
 ISerializer = BeckonInterface(_ISerializer, infer_from='model')
 ```
 
-Register a serializer and it automatically links to its model:
+The `infer_from` parameter tells beckon which attribute to check
+when inferring relationships. When a component has a `Meta.model`
+attribute pointing to a registered model, beckon links them
+automatically:
 
 ```python
-register(IModel, Post)
-register(ISerializer, PostSerializer)  # infers from Meta.model
+# posts/resources.py
+
+from beckon import register
+from myapp.interfaces import ISerializer
+
+from .serializers import PostSerializer
+
+register(ISerializer, PostSerializer)  # infers model from Meta.model
+```
+
+Since models are already registered, beckon links the serializer
+to its model automatically:
+
+```python
+import beckon
 
 beckon(ISerializer, 'posts.post')  # -> PostSerializer
 beckon(IModel, 'posts.post')       # -> Post (reverse works too)

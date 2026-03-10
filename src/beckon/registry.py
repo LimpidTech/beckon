@@ -20,7 +20,7 @@ def _resolve_name(component: Any) -> str:
     # Explicit name attribute always wins
     name = getattr(component, 'name', None)
 
-    if name is not None:
+    if isinstance(name, str):
         return name
 
     # Framework-specific resolvers (e.g. Django _meta.label_lower)
