@@ -16,13 +16,6 @@ __all__ = [
 
 
 class _SummonModule(types.ModuleType):
-    register = staticmethod(register)
-    summon = staticmethod(summon)
-    add_name_resolver = staticmethod(add_name_resolver)
-    clear = staticmethod(clear)
-    Collection = Collection
-    SummonInterface = SummonInterface
-
     def __call__(self, *args, **kwargs):
         return summon(*args, **kwargs)
 

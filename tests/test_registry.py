@@ -31,6 +31,27 @@ class TestCallableModule:
         result = summon(IModel, 'tests.fakearticle')
         assert result is FakeArticle
 
+    def test_module_exposes_register(self):
+        assert summon.register is register
+
+    def test_module_exposes_summon(self):
+        from summon import summon as summon_fn
+        assert summon.summon is summon_fn
+
+    def test_module_exposes_clear(self):
+        from summon.registry import clear as clear_fn
+        assert summon.clear is clear_fn
+
+    def test_module_exposes_add_name_resolver(self):
+        from summon.registry import add_name_resolver as anr
+        assert summon.add_name_resolver is anr
+
+    def test_module_exposes_summon_interface(self):
+        assert summon.SummonInterface is SummonInterface
+
+    def test_module_exposes_collection(self):
+        assert summon.Collection is Collection
+
 
 class TestRegisterModel:
     def test_registers_model(self):
